@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><link rel="stylesheet" href="style.css"><title>Dossier Pathogène</title></head>
+<body>
+    <div class="container">
+        <h1 id="s_nom">Chargement...</h1>
+        <div class="profile-layout">
+            <aside class="infobox">
+                <img id="s_img" style="width:100%">
+                <div class="data-scan" id="s_details"></div>
+            </aside>
+            <main>
+                <h3>DESCRIPTION TECHNIQUE</h3>
+                <p id="s_desc"></p>
+            </main>
+        </div>
+    </div>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        async function chargerFiche() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            const { data: s } = await supabase.from('souches').select('*').eq('id', id).single();
+            document.getElementById('s_nom').innerText = s.nom;
+            document.getElementById('s_img').src = s.image_url;
+            document.getElementById('s_desc').innerText = s.description;
+            document.getElementById('s_details').innerHTML = `
+                <p>TYPE: ${s.type}</p>
+                <p>ORIGINE: ${s.origine}</p>
+                <p>DANGER: ${s.dangerosite}</p>`;
+        }
+        chargerFiche();
+    </script>
+</body>
+</html>

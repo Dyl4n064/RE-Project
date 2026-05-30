@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Enregistrement // Terminal</title>
+</head>
+<body>
+    <div class="container">
+        <h1>ENREGISTREMENT SUJET</h1>
+        
+        <div class="field"><label>Nom complet</label><input type="text" id="f_nom"></div>
+        <div class="field"><label>URL Image</label><input type="text" id="f_image_url"></div>
+        <div class="field"><label>Date de naissance</label><input type="text" id="f_date_naissance"></div>
+        <div class="field"><label>Espèce</label><input type="text" id="f_espece"></div>
+        <div class="field"><label>Sexe</label><input type="text" id="f_sexe"></div>
+        
+        <div class="field"><label>Situation</label><input type="text" id="f_situation"></div>
+        <div class="field"><label>Statut</label><input type="text" id="f_statut"></div>
+        <div class="field"><label>Localisation</label><input type="text" id="f_localisation"></div>
+        <div class="field"><label>Activité</label><input type="text" id="f_activite"></div>
+        <div class="field"><label>Affiliations</label><input type="text" id="f_affiliations"></div>
+        
+        <div class="field"><label>Famille</label><input type="text" id="f_famille"></div>
+        <div class="field"><label>Amis</label><input type="text" id="f_amis"></div>
+        <div class="field"><label>Relations</label><input type="text" id="f_relations"></div>
+        <div class="field"><label>Ennemis</label><input type="text" id="f_ennemis"></div>
+        
+        <div class="field"><label>Interprète (Faceclaim)</label><input type="text" id="f_interprete"></div>
+        <div class="field"><label>Roleplayer</label><input type="text" id="f_roleplayer"></div>
+        
+        <div class="field"><label>Histoire complète</label><textarea id="f_histoire_complete" rows="6"></textarea></div>
+        
+        <button onclick="publierFiche()">VALIDER DANS LA BASE</button>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function publierFiche() {
+            // On récupère toutes les valeurs et on les associe EXACTEMENT aux noms des colonnes Supabase
+            const dataForm = {
+                nom: document.getElementById('f_nom').value,
+                image_url: document.getElementById('f_image_url').value,
+                date_naissance: document.getElementById('f_date_naissance').value,
+                espece: document.getElementById('f_espece').value,
+                sexe: document.getElementById('f_sexe').value,
+                situation: document.getElementById('f_situation').value,
+                statut: document.getElementById('f_statut').value,
+                localisation: document.getElementById('f_localisation').value,
+                activité: document.getElementById('f_activite').value, // Accents conservés pour Supabase
+                famille: document.getElementById('f_famille').value,
+                amis: document.getElementById('f_amis').value,
+                relations: document.getElementById('f_relations').value,
+                ennemis: document.getElementById('f_ennemis').value,
+                affiliations: document.getElementById('f_affiliations').value,
+                interprète: document.getElementById('f_interprete').value, // Accents conservés pour Supabase
+                roleplayer: document.getElementById('f_roleplayer').value,
+                histoire_complète: document.getElementById('f_histoire_complete').value // Accents conservés pour Supabase
+            };
+
+            const { error } = await supabase.from('personnages').insert([dataForm]);
+            
+            if (error) { 
+                alert("ERREUR: " + error.message); 
+            } else { 
+                alert("SUCCÈS: Dossier du sujet créé et synchronisé avec ARK."); 
+                // Optionnel : Vider le formulaire après succès
+                document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+            }
+        }
+    </script>
+</body>
+</html>

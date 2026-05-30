@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><link rel="stylesheet" href="style.css"><title>Registre Biologique</title></head>
+<body>
+    <div class="container">
+        <h1>BASE DE DONNÉES PATHOGÈNES</h1>
+        <div class="roster-grid" id="grille-souches">Chargement...</div>
+    </div>
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        async function chargerSouches() {
+            const { data: s } = await supabase.from('souches').select('*');
+            document.getElementById('grille-souches').innerHTML = s.map(souche => `
+                <a href="fiche_souche.html?id=${souche.id}" class="card">
+                    <h3>${souche.nom}</h3>
+                    <p>TYPE: ${souche.type}</p>
+                    <p>DANGER: ${souche.dangerosite}</p>
+                </a>
+            `).join('');
+        }
+        chargerSouches();
+    </script>
+</body>
+</html>
