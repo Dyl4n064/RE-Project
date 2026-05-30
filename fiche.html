@@ -8,19 +8,15 @@
 <body>
     <div class="container">
         
-        <!-- C'EST CETTE LIGNE QUI AFFICHE LE NOM COMPLET EN GROS -->
-        <h1 id="f_nom">Chargement...</h1>
+        <h1 id="f_nom">[ACCÈS SÉCURISÉ] // CHARGEMENT...</h1>
         
         <div class="profile-layout">
-            <!-- Colonne de Gauche : Infos Techniques -->
             <aside class="infobox">
                 <img id="f_img" style="width:100%; border: 1px solid #00ff00; margin-bottom: 15px;">
                 <div id="f_details" class="data-scan">
-                    <!-- Les détails automatisés vont s'injecter ici -->
-                </div>
+                    </div>
             </aside>
             
-            <!-- Colonne de Droite : Histoire Générale -->
             <main>
                 <h3>RAPPORT D'ACTIVITÉ & ANAMNÈSE</h3>
                 <p id="f_histoire">En attente de décryptage des données...</p>
@@ -31,10 +27,10 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Correction ici : on utilise supabaseClient pour éviter le bug de redéclaration
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         async function chargerFiche() {
-            // 1. On récupère l'ID dans l'URL (ex: fiche.html?id=1)
             const id = new URLSearchParams(window.location.search).get('id');
             
             if(!id) {
@@ -42,8 +38,8 @@
                 return;
             }
 
-            // 2. On interroge Supabase
-            const { data: p, error } = await supabase.from('personnages').select('*').eq('id', id).single();
+            // On interroge la table avec le nouveau nom de variable
+            const { data: p, error } = await supabaseClient.from('personnages').select('*').eq('id', id).single();
             
             if (error) {
                 document.getElementById('f_nom').innerText = "SUJET INTROUVABLE";
@@ -51,13 +47,12 @@
                 return;
             }
 
-            // 3. On injecte les données de base
-            // C'est ici que p.nom remplace le texte "Chargement..." du <h1>
+            // Injection des données de base
             document.getElementById('f_nom').innerText = p.nom;
             document.getElementById('f_img').src = p.image_url; 
             document.getElementById('f_histoire').innerText = p.histoire_complète; 
 
-            // 4. On injecte tout ton Lore dans l'infobox de gauche
+            // Injection de tout ton Lore
             document.getElementById('f_details').innerHTML = `
                 <p><strong>STATUT :</strong> ${p.statut || 'Inconnu'}</p>
                 <p><strong>SITUATION :</strong> ${p.situation || 'Inconnue'}</p>
@@ -78,7 +73,6 @@
             `;
         }
         
-        // Lancement automatique au chargement de la page
         chargerFiche();
     </script>
 </body>
