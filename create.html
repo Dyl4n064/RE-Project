@@ -37,10 +37,10 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Modification ici : supabaseClient pour éviter le crash
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         async function publierFiche() {
-            // On récupère toutes les valeurs et on les associe EXACTEMENT aux noms des colonnes Supabase
             const dataForm = {
                 nom: document.getElementById('f_nom').value,
                 image_url: document.getElementById('f_image_url').value,
@@ -50,24 +50,24 @@
                 situation: document.getElementById('f_situation').value,
                 statut: document.getElementById('f_statut').value,
                 localisation: document.getElementById('f_localisation').value,
-                activité: document.getElementById('f_activite').value, // Accents conservés pour Supabase
+                activité: document.getElementById('f_activite').value, 
                 famille: document.getElementById('f_famille').value,
                 amis: document.getElementById('f_amis').value,
                 relations: document.getElementById('f_relations').value,
                 ennemis: document.getElementById('f_ennemis').value,
                 affiliations: document.getElementById('f_affiliations').value,
-                interprète: document.getElementById('f_interprete').value, // Accents conservés pour Supabase
+                interprète: document.getElementById('f_interprete').value, 
                 roleplayer: document.getElementById('f_roleplayer').value,
-                histoire_complète: document.getElementById('f_histoire_complete').value // Accents conservés pour Supabase
+                histoire_complète: document.getElementById('f_histoire_complete').value 
             };
 
-            const { error } = await supabase.from('personnages').insert([dataForm]);
+            // Utilisation de supabaseClient pour l'insertion
+            const { error } = await supabaseClient.from('personnages').insert([dataForm]);
             
             if (error) { 
                 alert("ERREUR: " + error.message); 
             } else { 
                 alert("SUCCÈS: Dossier du sujet créé et synchronisé avec ARK."); 
-                // Optionnel : Vider le formulaire après succès
                 document.querySelectorAll('input, textarea').forEach(el => el.value = '');
             }
         }
