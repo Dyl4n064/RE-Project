@@ -8,18 +8,29 @@
 <body>
     <div class="container">
         
+        <!-- Bouton d'action principal du terminal -->
+        <button id="btn_mode" onclick="basculerMode()" style="width: auto; float: right; padding: 7px 15px; margin-bottom: 10px;">[ÉDITER LE DOSSIER]</button>
+        
         <h1 id="f_nom">[ACCÈS SÉCURISÉ] // CHARGEMENT...</h1>
         
         <div class="profile-layout">
             <aside class="infobox">
                 <img id="f_img" style="width:100%; border: 1px solid #00ff00; margin-bottom: 15px;">
+                <!-- Zone de modification de l'image (cachée par défaut) -->
+                <div id="f_img_edit_container" style="display: none; margin-bottom: 15px;"></div>
+                
                 <div id="f_details" class="data-scan">
-                    </div>
+                    <!-- Les données s'injectent ici dynamiquement -->
+                </div>
             </aside>
             
             <main>
                 <h3>HISTOIRE</h3>
                 <p id="f_histoire">En attente de décryptage des données...</p>
+                <!-- Zone de modification de l'histoire (cachée par défaut) -->
+                <div id="f_histoire_edit_container" style="display: none;">
+                    <textarea id="f_histoire_edit" style="width: 100%; min-height: 350px; background: #000; border: 1px solid var(--accent-color); color: #fff; padding: 10px; font-family: 'Share Tech Mono', monospace; box-sizing: border-box;"></textarea>
+                </div>
             </main>
         </div>
     </div>
@@ -27,32 +38,43 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Correction ici : on utilise supabaseClient pour éviter le bug de redéclaration
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
+        let p = {}; // Variable globale pour stocker les données de l'agent Umbrella/BSAA
+        let modeEdition = false; // Suivi du mode actuel
+
         async function chargerFiche() {
             const id = new URLSearchParams(window.location.search).get('id');
-            
             if(!id) {
                 document.getElementById('f_nom').innerText = "ERREUR : AUCUN ID SPÉCIFIÉ";
                 return;
             }
 
-            // On interroge la table avec le nouveau nom de variable
-            const { data: p, error } = await supabaseClient.from('personnages').select('*').eq('id', id).single();
-            
+            const { data, error } = await supabaseClient.from('personnages').select('*').eq('id', id).single();
             if (error) {
                 document.getElementById('f_nom').innerText = "SUJET INTROUVABLE";
                 console.error(error);
                 return;
             }
 
-            // Injection des données de base
+            p = data; // Stockage des données reçues
+            afficherModeLecture();
+        }
+
+        function afficherModeLecture() {
+            modeEdition = false;
+            document.getElementById('btn_mode').innerText = "[ÉDITER LE DOSSIER]";
+            
+            // Affichage normal des éléments textuels
             document.getElementById('f_nom').innerText = p.nom;
             document.getElementById('f_img').src = p.image_url; 
+            document.getElementById('f_img').style.display = 'block';
+            document.getElementById('f_img_edit_container').style.display = 'none';
+            
             document.getElementById('f_histoire').innerText = p.histoire_complète; 
+            document.getElementById('f_histoire').style.display = 'block';
+            document.getElementById('f_histoire_edit_container').style.display = 'none';
 
-            // Injection de tout ton Lore
+            // Injection des paragraphes de données
             document.getElementById('f_details').innerHTML = `
                 <p><strong>STATUT :</strong> ${p.statut || 'Inconnu'}</p>
                 <p><strong>SITUATION :</strong> ${p.situation || 'Inconnue'}</p>
@@ -71,6 +93,91 @@
                 <p><small>INTERPRÈTE : ${p.interprète || 'N/A'}</small></p>
                 <p><small>ROLEPLAYER : ${p.roleplayer || 'N/A'}</small></p>
             `;
+        }
+
+        function afficherModeEdition() {
+            modeEdition = true;
+            document.getElementById('btn_mode').innerText = "[SAUVEGARDER LES DONNÉES]";
+
+            // Transformation du titre en champ de saisie
+            document.getElementById('f_nom').innerHTML = `<input id="edit_nom" value="${p.nom || ''}" style="font-size: 24px; color: var(--accent-color); font-family: 'Share Tech Mono', monospace;">`;
+            
+            // Affichage du champ pour modifier l'URL de l'image
+            document.getElementById('f_img').style.display = 'none';
+            const imgContainer = document.getElementById('f_img_edit_container');
+            imgContainer.style.display = 'block';
+            imgContainer.innerHTML = `<label>Lien de l'image (URL) :</label><input id="edit_image_url" value="${p.image_url || ''}">`;
+
+            // Bascule de la zone d'histoire en Textarea
+            document.getElementById('f_histoire').style.display = 'none';
+            document.getElementById('f_histoire_edit_container').style.display = 'block';
+            document.getElementById('f_histoire_edit').value = p.histoire_complète || '';
+
+            // Remplacement de la barre latérale par des inputs de saisie ordonnés
+            document.getElementById('f_details').innerHTML = `
+                <label>Statut</label><input id="edit_statut" value="${p.statut || ''}">
+                <label>Situation</label><input id="edit_situation" value="${p.situation || ''}">
+                <label>Espèce</label><input id="edit_espece" value="${p.espece || ''}">
+                <label>Sexe</label><input id="edit_sexe" value="${p.sexe || ''}">
+                <label>Naissance</label><input id="edit_date_naissance" value="${p.date_naissance || ''}">
+                <label>Localisation</label><input id="edit_localisation" value="${p.localisation || ''}">
+                <label>Activité</label><input id="edit_activite" value="${p.activité || ''}">
+                <hr style="border-color: #00ff00;">
+                <label>Affiliations</label><input id="edit_affiliations" value="${p.affiliations || ''}">
+                <label>Famille</label><input id="edit_famille" value="${p.famille || ''}">
+                <label>Amis</label><input id="edit_amis" value="${p.amis || ''}">
+                <label>Relations</label><input id="edit_relations" value="${p.relations || ''}">
+                <label>Ennemis</label><input id="edit_ennemis" value="${p.ennemis || ''}">
+                <hr style="border-color: #00ff00;">
+                <label>Interprète (Casting)</label><input id="edit_interprete" value="${p.interprète || ''}">
+                <label>Roleplayer</label><input id="edit_roleplayer" value="${p.roleplayer || ''}">
+            `;
+        }
+
+        async function basculerMode() {
+            if (!modeEdition) {
+                afficherModeEdition();
+            } else {
+                await sauvegarderFiche();
+            }
+        }
+
+        async function sauvegarderFiche() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            document.getElementById('btn_mode').innerText = "[SYNCHRONISATION MAINFRAME...]";
+
+            // Récupération de l'intégralité des valeurs saisies dans le formulaire
+            const modifications = {
+                nom: document.getElementById('edit_nom').value,
+                image_url: document.getElementById('edit_image_url').value,
+                histoire_complète: document.getElementById('edit_histoire_edit').value,
+                statut: document.getElementById('edit_statut').value,
+                situation: document.getElementById('edit_situation').value,
+                espece: document.getElementById('edit_espece').value,
+                sexe: document.getElementById('edit_sexe').value,
+                date_naissance: document.getElementById('edit_date_naissance').value,
+                localisation: document.getElementById('edit_localisation').value,
+                activité: document.getElementById('edit_activite').value,
+                affiliations: document.getElementById('edit_affiliations').value,
+                famille: document.getElementById('edit_famille').value,
+                amis: document.getElementById('edit_amis').value,
+                relations: document.getElementById('edit_relations').value,
+                ennemis: document.getElementById('edit_ennemis').value,
+                interprète: document.getElementById('edit_interprete').value,
+                roleplayer: document.getElementById('edit_roleplayer').value
+            };
+
+            const { error } = await supabaseClient.from('personnages').update(modifications).eq('id', id);
+
+            if (error) {
+                alert("ÉCHEC DE LA SYNCHRONISATION : Accès refusé ou erreur serveur.");
+                console.error(error);
+                document.getElementById('btn_mode').innerText = "[RETIENT DE SÉCURITÉ : RÉESSAYER]";
+            } else {
+                // Mise à jour locale de la variable et retour au mode lecture propre
+                p = { ...p, ...modifications };
+                afficherModeLecture();
+            }
         }
         
         chargerFiche();
