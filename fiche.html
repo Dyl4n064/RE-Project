@@ -8,8 +8,11 @@
 <body>
     <div class="container">
         
-        <button onclick="window.location.href='personnages.html'" style="width: auto; float: left; padding: 7px 15px; margin-bottom: 10px;">[🗁 RETOUR]</button>
-        <button id="btn_mode" onclick="basculerMode()" style="width: auto; float: right; padding: 7px 15px; margin-bottom: 10px;">[ÉDITER LE DOSSIER]</button>
+        <!-- BARRE DE NAVIGATION EN-TÊTE -->
+        <div class="terminal-header">
+            <button class="btn-retour" onclick="window.location.href='personnages.html'" style="width: auto; padding: 7px 15px;">[🗁 RETOUR]</button>
+            <button id="btn_mode" onclick="basculerMode()" style="width: auto; padding: 7px 15px;">[ÉDITER LE DOSSIER]</button>
+        </div>
         
         <h1 id="f_nom">[ACCÈS SÉCURISÉ] // CHARGEMENT...</h1>
         
