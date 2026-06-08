@@ -18,15 +18,13 @@
             <aside class="infobox">
                 <img id="s_img" style="width:100%; border-bottom: 2px solid var(--accent-color); margin-bottom: 10px;">
                 <div class="data-scan" id="s_details">
-                    <!-- Tronc commun injecté ici -->
-                </div>
+                    </div>
             </aside>
             
             <main>
                 <h3 style="color: var(--accent-color);">DESCRIPTION GÉNÉRALE</h3>
                 <p id="s_desc"></p>
 
-                <!-- Zone dynamique injectée via JavaScript -->
                 <div id="zone_specifique" style="margin-top: 30px; padding-top: 20px; border-top: 1px dashed var(--border-color);">
                 </div>
             </main>
@@ -36,11 +34,14 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // CORRECTION ICI : supabase -> supabaseClient
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         async function chargerFiche() {
             const id = new URLSearchParams(window.location.search).get('id');
-            const { data: s, error } = await supabase.from('souches').select('*').eq('id', id).single();
+            
+            // CORRECTION ICI : Utilisation de supabaseClient
+            const { data: s, error } = await supabaseClient.from('souches').select('*').eq('id', id).single();
             
             if (error) {
                 document.getElementById('s_nom').innerText = "ERREUR SYSTÈME";
@@ -66,18 +67,24 @@
             let htmlSpecifique = '';
 
             if (type.includes('vaccin') || type.includes('remède') || type.includes('remede')) {
+                // Bordure image en bleu clinique
+                document.getElementById('s_img').style.borderBottomColor = "#00e5ff";
+                
                 htmlSpecifique = `
-                    <h3 style="color: var(--accent-color);">DONNÉES MÉDICALES</h3>
+                    <h3 style="color: #00e5ff;">DONNÉES MÉDICALES</h3>
                     <div class="data-scan">
                         <label>PATHOGÈNE CIBLE</label>
                         <p>${s.pathogene_cible || 'Inconnu'}</p>
                         <label>TAUX D'EFFICACITÉ</label>
-                        <p>${s.taux_efficacite || 'En cours d\'évaluation'}</p>
+                        <p>${s.taux_efficacite || 'En cours d\\'évaluation'}</p>
                         <label>EFFETS SECONDAIRES</label>
                         <p>${s.effets_secondaires || 'Aucun'}</p>
                     </div>
                 `;
             } else if (type.includes('arme') || type.includes('b.o.w') || type.includes('bow')) {
+                // Bordure image en rouge danger
+                document.getElementById('s_img').style.borderBottomColor = "var(--danger-color)";
+                
                 htmlSpecifique = `
                     <h3 style="color: var(--danger-color);">SPÉCIFICATIONS MARTIALES</h3>
                     <div class="data-scan">
@@ -94,6 +101,9 @@
                     </div>
                 `;
             } else {
+                // Bordure image en orange warning pour les virus/parasites
+                document.getElementById('s_img').style.borderBottomColor = "#ffaa00";
+                
                 htmlSpecifique = `
                     <h3 style="color: #ffaa00;">VECTEUR D'INFECTION</h3>
                     <div class="data-scan">
