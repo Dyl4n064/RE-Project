@@ -10,7 +10,10 @@
     <div class="container">
         
         <div class="terminal-header">
-            <button class="btn-retour" onclick="window.location.href='souches.html'">[RETOUR]</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-retour" onclick="window.location.href='souches.html'">[RETOUR]</button>
+                <button id="btn_mode" class="btn-retour" onclick="basculerMode()">[ÉDITER LA FICHE]</button>
+            </div>
             <h2 id="s_nom">Chargement...</h2>
         </div>
 
@@ -35,17 +38,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let s = {}; // Stockage global des données du pathogène
+        let id = null;
+        let modeEdition = false;
         
         async function chargerFiche() {
-            const id = new URLSearchParams(window.location.search).get('id');
+            id = new URLSearchParams(window.location.search).get('id');
             
-            const { data: s, error } = await supabaseClient.from('souches').select('*').eq('id', id).single();
+            const { data, error } = await supabaseClient.from('souches').select('*').eq('id', id).single();
             
             if (error) {
                 document.getElementById('s_nom').innerText = "ERREUR SYSTÈME";
                 return;
             }
 
+            s = data;
+            afficherModeLecture();
+        }
+
+        function afficherModeLecture() {
+            modeEdition = false;
+            document.getElementById('btn_mode').innerText = "[ÉDITER LA FICHE]";
+            
             // 1. Remplissage du tronc commun
             document.getElementById('s_nom').innerText = s.nom || 'Inconnu';
             document.getElementById('s_img').src = s.image_url || 'default.jpg';
@@ -65,7 +79,6 @@
             let htmlSpecifique = '';
 
             if (type.includes('vaccin') || type.includes('remède') || type.includes('remede')) {
-                // Bordure image en bleu clinique
                 document.getElementById('s_img').style.borderBottomColor = "#00e5ff";
                 
                 htmlSpecifique = `
@@ -80,7 +93,6 @@
                     </div>
                 `;
             } else if (type.includes('arme') || type.includes('b.o.w') || type.includes('bow')) {
-                // Bordure image en rouge danger
                 document.getElementById('s_img').style.borderBottomColor = "var(--danger-color)";
                 
                 htmlSpecifique = `
@@ -99,7 +111,6 @@
                     </div>
                 `;
             } else {
-                // Bordure image en orange warning pour les virus/parasites
                 document.getElementById('s_img').style.borderBottomColor = "#ffaa00";
                 
                 htmlSpecifique = `
@@ -118,6 +129,135 @@
             }
 
             document.getElementById('zone_specifique').innerHTML = htmlSpecifique;
+        }
+
+        function afficherModeEdition() {
+            modeEdition = true;
+            document.getElementById('btn_mode').innerText = "[SAUVEGARDER LE DOSSIER]";
+
+            // Titre éditable en conservant le style du terminal
+            document.getElementById('s_nom').innerHTML = `<input type="text" id="edit_nom" value="${s.nom || ''}" style="margin: 0; font-family: inherit; font-size: inherit; color: var(--accent-color); background: transparent; border-bottom: 1px solid var(--accent-color);">`;
+            
+            // Description éditable
+            document.getElementById('s_desc').innerHTML = `<textarea id="edit_description" rows="5">${s.description || ''}</textarea>`;
+
+            // Tronc commun de l'infobox en inputs
+            document.getElementById('s_details').innerHTML = `
+                <label>URL DE L'IMAGE</label>
+                <input type="text" id="edit_image_url" value="${s.image_url || ''}">
+                <label>CLASSIFICATION</label>
+                <input type="text" id="edit_type" value="${s.type || ''}">
+                <label>ORIGINE / CRÉATEUR</label>
+                <input type="text" id="edit_createur_origine" value="${s.createur_origine || ''}">
+                <label>STATUT ACTUEL</label>
+                <input type="text" id="edit_statut" value="${s.statut || ''}">
+            `;
+
+            // Logique dynamique pour l'édition des données spécifiques
+            const type = (s.type || '').toLowerCase();
+            let htmlSpecifique = '';
+
+            if (type.includes('vaccin') || type.includes('remède') || type.includes('remede')) {
+                htmlSpecifique = `
+                    <h3 style="color: #00e5ff;">ÉDITION DONNÉES MÉDICALES</h3>
+                    <div class="data-scan">
+                        <label>PATHOGÈNE CIBLE</label>
+                        <input type="text" id="edit_pathogene_cible" value="${s.pathogene_cible || ''}">
+                        <label>TAUX D'EFFICACITÉ</label>
+                        <input type="text" id="edit_taux_efficacite" value="${s.taux_efficacite || ''}">
+                        <label>EFFETS SECONDAIRES</label>
+                        <textarea id="edit_effets_secondaires" rows="3">${s.effets_secondaires || ''}</textarea>
+                    </div>
+                `;
+            } else if (type.includes('arme') || type.includes('b.o.w') || type.includes('bow')) {
+                htmlSpecifique = `
+                    <h3 style="color: var(--danger-color);">ÉDITION SPÉCIFICATIONS MARTIALES</h3>
+                    <div class="data-scan">
+                        <label>NIVEAU DE MENACE</label>
+                        <input type="text" id="edit_dangerosite" value="${s.dangerosite || ''}">
+                        <label>INTELLIGENCE</label>
+                        <input type="text" id="edit_intelligence" value="${s.intelligence || ''}">
+                        <label>CAPACITÉS PHYSIQUES</label>
+                        <textarea id="edit_capacites" rows="3">${s.capacites || ''}</textarea>
+                        <label>FAIBLESSES EXPLOITABLES</label>
+                        <textarea id="edit_faiblesses" rows="3">${s.faiblesses || ''}</textarea>
+                        <label>MÉTHODE DE CONTRÔLE</label>
+                        <input type="text" id="edit_methode_controle" value="${s.methode_controle || ''}">
+                    </div>
+                `;
+            } else {
+                htmlSpecifique = `
+                    <h3 style="color: #ffaa00;">ÉDITION VECTEUR D'INFECTION</h3>
+                    <div class="data-scan">
+                        <label>NIVEAU DE MENACE</label>
+                        <input type="text" id="edit_dangerosite" value="${s.dangerosite || ''}">
+                        <label>MÉTHODE DE TRANSMISSION</label>
+                        <input type="text" id="edit_vecteur_infection" value="${s.vecteur_infection || ''}">
+                        <label>TEMPS D'INCUBATION</label>
+                        <input type="text" id="edit_temps_incubation" value="${s.temps_incubation || ''}">
+                        <label>SYMPTÔMES CLINIQUES</label>
+                        <textarea id="edit_symptomes" rows="3">${s.symptomes || ''}</textarea>
+                    </div>
+                `;
+            }
+
+            document.getElementById('zone_specifique').innerHTML = htmlSpecifique;
+        }
+
+        function basculerMode() {
+            if (!modeEdition) {
+                afficherModeEdition();
+            } else {
+                sauvegarderFiche();
+            }
+        }
+
+        async function sauvegarderFiche() {
+            const btn = document.getElementById('btn_mode');
+            btn.innerText = "[SYNCHRONISATION EN COURS...]";
+
+            const typeActuel = (s.type || '').toLowerCase();
+            
+            // Collecte des modifications du tronc commun
+            const modifications = {
+                nom: document.getElementById('edit_nom').value,
+                description: document.getElementById('edit_description').value,
+                image_url: document.getElementById('edit_image_url').value,
+                type: document.getElementById('edit_type').value,
+                createur_origine: document.getElementById('edit_createur_origine').value,
+                statut: document.getElementById('edit_statut').value
+            };
+
+            // Collecte conditionnelle des champs spécifiques selon la catégorie affichée
+            if (typeActuel.includes('vaccin') || typeActuel.includes('remède') || typeActuel.includes('remede')) {
+                modifications.pathogene_cible = document.getElementById('edit_pathogene_cible').value;
+                modifications.taux_efficacite = document.getElementById('edit_taux_efficacite').value;
+                modifications.effets_secondaires = document.getElementById('edit_effets_secondaires').value;
+            } else if (typeActuel.includes('arme') || typeActuel.includes('b.o.w') || typeActuel.includes('bow')) {
+                modifications.dangerosite = document.getElementById('edit_dangerosite').value;
+                modifications.intelligence = document.getElementById('edit_intelligence').value;
+                modifications.capacites = document.getElementById('edit_capacites').value;
+                modifications.faiblesses = document.getElementById('edit_faiblesses').value;
+                modifications.methode_controle = document.getElementById('edit_methode_controle').value;
+            } else {
+                modifications.dangerosite = document.getElementById('edit_dangerosite').value;
+                modifications.vecteur_infection = document.getElementById('edit_vecteur_infection').value;
+                modifications.temps_incubation = document.getElementById('edit_temps_incubation').value;
+                modifications.symptomes = document.getElementById('edit_symptomes').value;
+            }
+
+            // Push vers la base de données Supabase
+            const { error } = await supabaseClient.from('souches').update(modifications).eq('id', id);
+
+            if (error) {
+                alert("ÉCHEC DE LA SYNCHRONISATION : Accès refusé ou erreur serveur.");
+                console.error(error);
+                btn.innerText = "[RETENUE DE SÉCURITÉ : RÉESSAYER]";
+            } else {
+                // Application locale et retour à l'affichage fixe
+                s = { ...s, ...modifications };
+                afficherModeLecture();
+            }
         }
         
         chargerFiche();
