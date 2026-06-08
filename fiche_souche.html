@@ -9,16 +9,17 @@
 <body>
     <div class="container">
         
-        <div class="terminal-header">
-            <div style="display: flex; gap: 10px;">
+        <div class="terminal-header" style="margin-bottom: 25px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <button class="btn-retour" onclick="window.location.href='souches.html'">[RETOUR]</button>
                 <button id="btn_mode" class="btn-retour" onclick="basculerMode()">[ÉDITER LA FICHE]</button>
             </div>
-            <h2 id="s_nom">Chargement...</h2>
         </div>
 
         <div class="profile-layout">
             <aside class="infobox">
+                <h2 id="s_nom" style="text-align: center; margin-top: 0; margin-bottom: 15px; word-wrap: break-word;">Chargement...</h2>
+                
                 <img id="s_img" style="width:100%; border-bottom: 2px solid var(--accent-color); margin-bottom: 10px;">
                 <div class="data-scan" id="s_details">
                     </div>
@@ -135,8 +136,8 @@
             modeEdition = true;
             document.getElementById('btn_mode').innerText = "[SAUVEGARDER LE DOSSIER]";
 
-            // Titre éditable en conservant le style du terminal
-            document.getElementById('s_nom').innerHTML = `<input type="text" id="edit_nom" value="${s.nom || ''}" style="margin: 0; font-family: inherit; font-size: inherit; color: var(--accent-color); background: transparent; border-bottom: 1px solid var(--accent-color);">`;
+            // Titre éditable adapté à la largeur de la boîte photo
+            document.getElementById('s_nom').innerHTML = `<input type="text" id="edit_nom" value="${s.nom || ''}" style="width: 100%; box-sizing: border-box; text-align: center; margin: 0; font-family: inherit; font-size: inherit; color: var(--accent-color); background: transparent; border: 1px dashed var(--accent-color); padding: 5px;">`;
             
             // Description éditable
             document.getElementById('s_desc').innerHTML = `<textarea id="edit_description" rows="5">${s.description || ''}</textarea>`;
