@@ -34,13 +34,11 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // CORRECTION ICI : supabase -> supabaseClient
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         async function chargerFiche() {
             const id = new URLSearchParams(window.location.search).get('id');
             
-            // CORRECTION ICI : Utilisation de supabaseClient
             const { data: s, error } = await supabaseClient.from('souches').select('*').eq('id', id).single();
             
             if (error) {
@@ -76,7 +74,7 @@
                         <label>PATHOGÈNE CIBLE</label>
                         <p>${s.pathogene_cible || 'Inconnu'}</p>
                         <label>TAUX D'EFFICACITÉ</label>
-                        <p>${s.taux_efficacite || 'En cours d\\'évaluation'}</p>
+                        <p>${s.taux_efficacite || "En cours d'évaluation"}</p>
                         <label>EFFETS SECONDAIRES</label>
                         <p>${s.effets_secondaires || 'Aucun'}</p>
                     </div>
