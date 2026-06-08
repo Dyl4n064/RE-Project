@@ -2,15 +2,21 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Enregistrement // Terminal</title>
 </head>
 <body>
     <div class="container">
+        
+        <div class="terminal-header" style="margin-bottom: 20px;">
+            <button class="btn-retour" onclick="window.location.href='personnages.html'" style="width: auto; padding: 7px 15px;">[ANNULER]</button>
+        </div>
+
         <h1>ENREGISTREMENT SUJET</h1>
         
         <div class="field"><label>Nom complet</label><input type="text" id="f_nom"></div>
-        <div class="field"><label>URL Image</label><input type="text" id="f_image_url"></div>
+        <div class="field"><label>URL Image</label><input type="text" id="f_image_url" placeholder="Lien Postimages direct ou image locale"></div>
         <div class="field"><label>Date de naissance</label><input type="text" id="f_date_naissance"></div>
         <div class="field"><label>Espèce</label><input type="text" id="f_espece"></div>
         <div class="field"><label>Sexe</label><input type="text" id="f_sexe"></div>
@@ -31,7 +37,7 @@
         
         <div class="field"><label>Histoire complète</label><textarea id="f_histoire_complète" rows="6"></textarea></div>
         
-        <button onclick="publierFiche()">VALIDER DANS LA BASE</button>
+        <button onclick="publierFiche()" style="margin-top: 20px;">VALIDER DANS LA BASE</button>
     </div>
 
     <script src="config.js"></script>
@@ -40,6 +46,11 @@
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         
         async function publierFiche() {
+            // Modification du texte du bouton pendant l'envoi pour confirmer l'action à l'utilisateur
+            const btn = document.querySelector('button[onclick="publierFiche()"]');
+            const originalText = btn.innerText;
+            btn.innerText = "[ TRANSMISSION EN COURS... ]";
+
             const dataForm = {
                 nom: document.getElementById('f_nom').value,
                 image_url: document.getElementById('f_image_url').value,
@@ -60,7 +71,6 @@
                 histoire_complète: document.getElementById('f_histoire_complète').value 
             };
 
-            // MODIFICATION ICI : On ajoute .select() pour obtenir les données générées
             const { data, error } = await supabaseClient
                 .from('personnages')
                 .insert([dataForm])
@@ -69,13 +79,12 @@
             if (error) { 
                 alert("ERREUR: " + error.message); 
                 console.error(error);
+                btn.innerText = originalText;
             } else { 
                 alert("SUCCÈS: Dossier du sujet créé et synchronisé avec ARK."); 
                 
-                // On récupère l'ID automatique donné par Supabase à la nouvelle ligne
                 const nouvelId = data[0].id;
                 
-                // Redirection vers la nouvelle fiche
                 window.location.href = 'fiche.html?id=' + nouvelId; 
             }
         }
